@@ -5,7 +5,7 @@ import numpy as np
 class KMeans():
     def __init__(self,k, data_set) -> None:
         super().__init__()
-        self.data_set = data_set
+        self.data_set = copy.deepcopy(data_set)
         self.k = k
 
     def fit(self):
@@ -49,9 +49,9 @@ class KMeans():
             data_cluster = list(filter(lambda element: element[len(element)-1] == cluster, data_set))
             length_cluster = len(data_cluster[0])
             # Creamos un vector de ceros
-            centroid = [0 for i in range(length_cluster)]
+            centroid = [0 for i in range(length_cluster-1)]
             # Le asignamos la clase al centroide -> [ 1, 2, 3, k ]
-            centroid[length_cluster-1] = cluster
+            #  Esto no va lo dejamos por las dudas -> centroid[length_cluster-1] = cluster
             #  Calculamos el centroide para la respectiva clase
             #  Ignoramos el ultimo elemento( valor de la clase ) de cada vector
             for cluster_element in data_cluster:
@@ -62,8 +62,10 @@ class KMeans():
         return centroids
                 
     def get_nearest_cluster(self, _element, centroids):
+        
         # No tomamos en cuenta la clase para calcular la distancia asi que le quitamos el ultimo elemento
         element = _element[:len(_element)-1]
+        
         # Calculamos las distancias -> elemento del vector -> abs(raiz_cuadrada(suma(potencia_cuadrada(xi-cluster[i]))))
         distances = [abs(np.sqrt(sum([ pow(x-cluster[i],2) for i,x in enumerate(element)]))) for cluster in centroids]
         return distances.index(min(distances))

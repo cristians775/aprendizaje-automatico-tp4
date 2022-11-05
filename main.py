@@ -3,6 +3,7 @@ import math
 
 import pandas as pd
 import numpy as np
+from HierarchicalGrouping import HierarchicalGrouping, Min
 
 from KMeans import KMeans
 
@@ -56,10 +57,17 @@ k = 3
 
 
         
-kmeans = KMeans(k, data_set)
-print(kmeans.fit())
+""" kmeans = KMeans(k, data_set)
+print(kmeans.fit()) """
 
 
+
+
+
+        
+hg = HierarchicalGrouping(data_set, Min())
+result = hg.fit()
+print(result, "length: ", len(result) )
 
 
         
