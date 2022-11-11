@@ -43,20 +43,17 @@ class KMeans():
     def centroids(self, data_set):
         # Calculamos los centroides de cada clase
         centroids = []
-        for cluster in range(self.k):
+        for cluster in range(0,self.k):
         #Obtenemos los elementos de la clase k
             # Filtramos por la clase k
             data_cluster = list(filter(lambda element: element[len(element)-1] == cluster, data_set))
             length_cluster = len(data_cluster[0])
             # Creamos un vector de ceros
-            centroid = [0 for i in range(length_cluster-1)]
-            # Le asignamos la clase al centroide -> [ 1, 2, 3, k ]
-            #  Esto no va lo dejamos por las dudas -> centroid[length_cluster-1] = cluster
-            #  Calculamos el centroide para la respectiva clase
-            #  Ignoramos el ultimo elemento( valor de la clase ) de cada vector
+            centroid = [0 for i in range(0,length_cluster-1)]
+           
             for cluster_element in data_cluster:
-                # Sumamos todos los elementos de la columna i Ej: result = 4 en i= 1 -> [ [ 1, 2, 3 ], [1, 2, 3] ]
-                for i in range(len(cluster_element)-2):
+                # Sumamos todos los elementos de la columna i Ej: result = 4 en i= 1 -> [ [ 1, 2,3 ], [1, 2, 3] ]
+                for i in range(0,len(cluster_element)-1):
                     centroid[i] = sum(map(lambda element: element[i],data_cluster)) / len(data_cluster)
             centroids.append(centroid)
         return centroids

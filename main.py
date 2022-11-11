@@ -1,11 +1,15 @@
 
+from json.encoder import INFINITY
 import math
-
+import scipy.cluster.hierarchy as sch
+import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
-from HierarchicalGrouping import HierarchicalGrouping, Min
+from HierarchicalGrouping_2 import HierarchicalGrouping, Max, Min
+
 
 from KMeans import KMeans
+from Kohonen import Kohonen
 
 df = pd.read_excel("./data.xlsx")
 
@@ -56,18 +60,92 @@ standardize_attributes(data_set,[ 'age', 'cad.dur', 'choleste' ])
 k = 3
 
 
+"""kmeans = KMeans(k, data_set)
+print(kmeans.fit())
+"""""
+
+
+
+
         
-""" kmeans = KMeans(k, data_set)
-print(kmeans.fit()) """
-
-
-
-
-
-        
-hg = HierarchicalGrouping(data_set, Min())
+""" hg = HierarchicalGrouping(data_set, Min())
 result = hg.fit()
-print(result, "length: ", len(result) )
+print(result, "length: ", len(result) ) """
 
-
+""" def distance(element, element_to_compare):
+    distances = [[abs(np.sqrt(sum([pow(x-vector_to_compare[i], 2) for i, x in enumerate(vector)])))
+                  for vector in element] for vector_to_compare in element_to_compare]
+    return distances 
         
+data_set = [[[1,2,4,4]], [[5,6,7,8]], [[9,10,11,12]], [[5,2,4,5]]]
+
+
+def calculate_distances(data_set):
+    distances = [[0 for j in data_set] for i in data_set]
+    for i in range(0,len(data_set)):
+        for j in range(0,len(data_set)):
+            distances[i][j]=distance(data_set[i], data_set[j])
+    return distances
+          
+n = len(data_set)
+
+def compare_min(distances):
+    distances_min = [[ [min(dist) for dist in group] for group in groups]for groups in distances]
+    dist_min = None
+    
+    for i in range(0,len(distances_min)):
+        for j in range(0, i):
+          if(dist_min == None):
+            dist_min = min(distances_min[i][j])
+            col = i
+            row = j
+          elif(distances_min[i][j] < dist_min):
+            dist_min=min(distances_min[i][j])
+            col = i
+            row = j
+
+    return col, row, dist_min
+
+def compare_max(distances):
+    distances_max = [[ [max(dist) for dist in group] for group in groups]for groups in distances]
+
+    dist_max = None
+    
+    for i in range(0,len(distances_max)):
+        for j in range(0, i):
+          if(dist_max == None):
+            dist_max = max(distances_max[i][j])
+
+            col = i
+            row = j
+          elif(distances_max[i][j] < dist_max):
+            dist_max=max(distances_max[i][j])
+            col = i
+            row = j
+    return col, row
+#def compare_prom(distances):
+    
+print("data", data_set)
+for _ in range(0,n-1):
+   
+    distances = calculate_distances(data_set)
+    i, j, dist =  compare_min(distances)
+    print("Fila: ",data_set[i],"Merge: ",data_set[j],"Dist: ", dist )
+    data_set[i] = data_set[i] + data_set[j]
+    
+    data_set.pop(j)
+    n-=1 """
+HierarchicalGrouping(data_set, Min()).fit()
+
+def plot_dendogram(data_set):        
+    dendrogram = sch.dendrogram(sch.linkage(data_set, method='single'))
+    
+    plt.title('Dendograma')
+    plt.xlabel('Indice - Fila')
+    plt.ylabel('Distancia')
+    plt.show()
+
+plot_dendogram([[1,2,4,4], [5,6,7,8], [9,10,11,12], [5,2,4,5]])
+
+kn = Kohonen(data_set,4)
+kn.fit()
