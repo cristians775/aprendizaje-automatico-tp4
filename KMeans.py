@@ -10,10 +10,14 @@ class KMeans():
 
     def fit(self):
         #Asignamos aleatoriamente un numero de clase de 1 a k a cada una de las observaciones  -> [1,2,3,k] 
-        for element in self.data_set:
-            class_random = randint(0,self.k)
-            element.append(class_random)
+
+           
+        for i in range(0,len(self.data_set)):
+            #print('i', len(i))
+            self.data_set[i]= self.data_set[i] + [randint(0,self.k)]
             
+
+        
         # Clonamos el data_set para poder modificar data_set_copy y no tener problemas de referencias
         data_set_update = copy.deepcopy(self.data_set)
         previous_data_set_update = []
@@ -43,17 +47,19 @@ class KMeans():
     def centroids(self, data_set):
         # Calculamos los centroides de cada clase
         centroids = []
+        length_cluster = len(self.data_set[0])
         for cluster in range(0,self.k):
-        #Obtenemos los elementos de la clase k
+            #Obtenemos los elementos de la clase k
             # Filtramos por la clase k
             data_cluster = list(filter(lambda element: element[len(element)-1] == cluster, data_set))
-            length_cluster = len(data_cluster[0])
+           
             # Creamos un vector de ceros
             centroid = [0 for i in range(0,length_cluster-1)]
-           
+   
             for cluster_element in data_cluster:
                 # Sumamos todos los elementos de la columna i Ej: result = 4 en i= 1 -> [ [ 1, 2,3 ], [1, 2, 3] ]
                 for i in range(0,len(cluster_element)-1):
+                    
                     centroid[i] = sum(map(lambda element: element[i],data_cluster)) / len(data_cluster)
             centroids.append(centroid)
         return centroids
