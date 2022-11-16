@@ -3,23 +3,23 @@ import copy
 from json.encoder import INFINITY
 import math
 import random
-import scipy.cluster.hierarchy as sch
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
 from HierarchicalGrouping_2 import AVG, HierarchicalGrouping, Max, Min
-
-
+from sklearn.cluster import KMeans as kms
+import matplotlib.pyplot as plt
 from KMeans import KMeans
 from Kohonen import Kohonen
+import scipy.cluster.hierarchy as sch
 
 df = pd.read_excel("./data.xlsx")
-
+df.fillna(0, inplace=True)
 # Conjunto de datos
 data_set = df.values.tolist()
 
 # Filtramos los datos y quitamos las filas que tienen valores de los atributos en blanco
-data_set = list(filter(lambda element: not np.isnan(element[3]), data_set))
+data_set = list(filter(lambda element: element[3]!=0, data_set))
 
 # Atributos segun su posicion
 attibutes_dic = {
@@ -49,22 +49,8 @@ def standardize_attributes(data, attribute_names):
         # Recorro el array original y le reemplazo los nuevos nuevos valores al atributo correspondiente
         for i in range(len(data)):
             data[i][atributte_position] = round(standard_variable[i],3)
-# Descartamos stdgiz
-def calculate_accuracy(true_class, result_class):
-    print("length true class: ", len(true_class), " length result class: ", len(result_class))
-    tp, tn, fp, fn = 0, 0, 0, 0
-    for i in range(0, len(result_class)):
-        if (true_class[i] == 1 and result_class[i] == 1):
-            tp += 1
-        elif (true_class[i] == 0 and result_class[i] == 0):
-            tn += 1
-        elif ((true_class[i] == 0 and result_class[i] == 1)):
-            fp += 1
-        elif ((true_class[i] == 1 and result_class[i] == 0)):
-            fn += 1
-    return (tp+tn)/(tp+tn+fp+fn)
 
-                     
+             
 def get_data_random(data, n):
     data_random = []
     for _ in range(0,n):
@@ -83,25 +69,37 @@ def kmeans(k, data_set):
         # No tomamos en cuenta el atributo tvdlm
         sigdz_list.append(vector[sigdz_position])
         new_data[i] = vector[:len(vector)-2]
-    
     kmeans = KMeans(k, new_data)
     kmeans_result = kmeans.fit()
-    k_attribute_position = 4
+    sgdiz_result = []
+    sgdiz_column = list(map(lambda x: x[attibutes_dic['sigdz']],data_set))
+    for i,result in enumerate(kmeans_result):
+        sgdiz_result.append([sgdiz_column[i],result[len(result)-1]])
+   #sgdiz_result-> [[sgdiz_value, cluster_value]]
+    clusters = []
+    #accuracy = calculate_accuracy(list(map(map(lambda x: x[k_attribute_position],data)), list(map(lambda x: x[k_attribute_position],kmeans_result))))
+    for i in range(0,k):
+        list_k = list(filter(lambda x: x[1] == i,sgdiz_result))
+        len_sgdiz_0 = len(list(filter(lambda x: x[0]==0,list_k)))
+        len_sgdiz_1 = len(list(filter(lambda x: x[0]==1,list_k)))
+        
+        if(len_sgdiz_0 > len_sgdiz_1):
+            clusters.append({'cluster': i,'grupo':'sanos', 'cantidad de sanos': len_sgdiz_0, 'cantidad de enfermos':len_sgdiz_1})
+        else:
+            clusters.append({'cluster': i,'grupo':'enfermos', 'cantidad de sanos': len_sgdiz_0, 'cantidad de enfermos':len_sgdiz_1})
+
+    #probamos 10 con datos random del data_set
+    #mostramos los datos random
+    random_data = get_data_random(new_data, 10)
+    
+    for result in kmeans.predict(random_data):
+
+        print('Individuo: ', result,  ' pertenece al grupo de ', clusters[result[len(result)-1]]['grupo'])
     
     
-    accuracy = calculate_accuracy(sigdz_list, list(map(lambda x: x[k_attribute_position],kmeans_result)))
-    return accuracy
 
+# kmeans(8, data_set)
 
-
-#print("KMEANS ACCURACY RESULTADO CON K = 2 CON 750 DATOS DEL CONJUNTO", kmeans(2, get_data_random(data_set, 750)))
-#print("KMEANS ACCURACY RESULTADO CON K = 2 CON 1000 DATOS DEL CONJUNTO", kmeans(2, get_data_random(data_set, 1000)))
-""" print("KMEANS ACCURACY RESULTADO CON K = 3", kmeans(3, data_set))
-print("KMEANS ACCURACY RESULTADO CON K = 4", kmeans(4, data_set))
-print("KMEANS ACCURACY RESULTADO CON K = 5", kmeans(5, data_set))
-print("KMEANS ACCURACY RESULTADO CON K = 6", kmeans(6, data_set))
-print("KMEANS ACCURACY RESULTADO CON K = 7", kmeans(7, data_set))
-print("KMEANS ACCURACY RESULTADO CON K = 8", kmeans(8, data_set)) """
 def plot_dendogram(data_set, metric):
     print('------------------------',metric )  
     dendrogram = sch.dendrogram(sch.linkage(data_set, method=metric))
@@ -126,94 +124,29 @@ def hg(data, metric_name,n):
         hg.fit_with_avg()
     else:
         hg = HierarchicalGrouping(data_random, Min())
-        
 
-    print("------------------------------------------------- DATOS PARA AGRUPAR ------------------------------------------------------")
-    for i,e in enumerate(data_random):
-        print(" VALUE ", e, " INDEX ", i)
-    print("------------------------------------------------- FIN DATOS PARA AGRUPAR ------------------------------------------------------")
    
     plot_dendogram(data_random,metric_name)
     
 
 
-hg(data_set, 'average', 30)
+#hg(data_set, 'complete', 30)
+
+new_data = [[] for i in data_set]
+for i, vector in enumerate(data_set):
+# No tomamos en cuenta el atributo tvdlm
+    new_data[i] = vector[:len(vector)-2]
+
+kn = Kohonen(new_data,list(map(lambda x: x[attibutes_dic['sigdz']],data_set)), 10)
+labels, w = kn.fit()
 
 
-""" def distance(element, element_to_compare):
-    distances = [[abs(np.sqrt(sum([pow(x-vector_to_compare[i], 2) for i, x in enumerate(vector)])))
-                  for vector in element] for vector_to_compare in element_to_compare]
-    return distances 
+print("------ ETIQUETAS --------")
+for i in range(0,len(labels)):
+    for j in range(0, len(labels)):
+        if(labels[i][j]['enfermo']>labels[i][j]['sano']):
+            print('E', end=" , ")
+        elif(labels[i][j]['enfermo']<labels[i][j]['sano']):
+            print('S', end=" , ")
         
-data_set = [[[1,2,4,4]], [[5,6,7,8]], [[9,10,11,12]], [[5,2,4,5]]]
-
-
-def calculate_distances(data_set):
-    distances = [[0 for j in data_set] for i in data_set]
-    for i in range(0,len(data_set)):
-        for j in range(0,len(data_set)):
-            distances[i][j]=distance(data_set[i], data_set[j])
-    return distances
-          
-n = len(data_set)
-
-def compare_min(distances):
-    distances_min = [[ [min(dist) for dist in group] for group in groups]for groups in distances]
-    dist_min = None
-    
-    for i in range(0,len(distances_min)):
-        for j in range(0, i):
-          if(dist_min == None):
-            dist_min = min(distances_min[i][j])
-            col = i
-            row = j
-          elif(distances_min[i][j] < dist_min):
-            dist_min=min(distances_min[i][j])
-            col = i
-            row = j
-
-    return col, row, dist_min
-
-def compare_max(distances):
-    distances_max = [[ [max(dist) for dist in group] for group in groups]for groups in distances]
-
-    dist_max = None
-    
-    for i in range(0,len(distances_max)):
-        for j in range(0, i):
-          if(dist_max == None):
-            dist_max = max(distances_max[i][j])
-
-            col = i
-            row = j
-          elif(distances_max[i][j] < dist_max):
-            dist_max=max(distances_max[i][j])
-            col = i
-            row = j
-    return col, row
-#def compare_prom(distances):
-    
-print("data", data_set)
-for _ in range(0,n-1):
-   
-    distances = calculate_distances(data_set)
-    i, j, dist =  compare_min(distances)
-    print("Fila: ",data_set[i],"Merge: ",data_set[j],"Dist: ", dist )
-    data_set[i] = data_set[i] + data_set[j]
-    
-    data_set.pop(j)
-    n-=1 """
-""" HierarchicalGrouping(data_set, Min()).fit()
-
-def plot_dendogram(data_set):        
-    dendrogram = sch.dendrogram(sch.linkage(data_set, method='single'))
-    
-    plt.title('Dendograma')
-    plt.xlabel('Indice - Fila')
-    plt.ylabel('Distancia')
-    plt.show()
-
-plot_dendogram([[1,2,4,4], [5,6,7,8], [9,10,11,12], [5,2,4,5]])
-
-kn = Kohonen(data_set,4)
-kn.fit() """
+    print("")
