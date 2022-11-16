@@ -137,16 +137,19 @@ for i, vector in enumerate(data_set):
 # No tomamos en cuenta el atributo tvdlm
     new_data[i] = vector[:len(vector)-2]
 
-kn = Kohonen(new_data,list(map(lambda x: x[attibutes_dic['sigdz']],data_set)), 10)
+kn = Kohonen(new_data,list(map(lambda x: x[attibutes_dic['sigdz']],data_set)), 6)
 labels, w = kn.fit()
 
 
 print("------ ETIQUETAS --------")
+
 for i in range(0,len(labels)):
     for j in range(0, len(labels)):
         if(labels[i][j]['enfermo']>labels[i][j]['sano']):
-            print('E', end=" , ")
+            print('E', end="  ")
         elif(labels[i][j]['enfermo']<labels[i][j]['sano']):
-            print('S', end=" , ")
+            print('S', end="  ")
+        else:
+            print(' ')
         
     print("")

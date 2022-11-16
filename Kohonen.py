@@ -25,10 +25,10 @@ class Kohonen():
         vicinity = self.k
         etha = 0.1
         times = 0
-        max_times = 200*len(data_set_random[0])
+        max_times = 20*len(data_set_random[0])
         
         while(times< max_times):
-            for i in range(0,len(data_set_random)-1):
+            for i in range(0,len(data_set_random)):
                     distances = self.calculate_distances(data_set_random[i], weights)
                     i_min = distances.index(min(distances))
                     j_min = distances[i_min].index(min(distances[i_min]))
@@ -41,8 +41,8 @@ class Kohonen():
                          self.labels[i_min][j_min]['enfermo']+=1
                     distances_v = self.calculate_distances(weight_min, weights)
                     
-                    for col in range(0, len(distances_v)-1):
-                        for row in range(0, len(distances_v)-1):
+                    for col in range(0, len(distances_v)):
+                        for row in range(0, len(distances_v)):
                             if(distances_v[col][row]< vicinity and col!=i_min and row!=j_min):
                                 V = e**((-2*distances_v[col][row])/vicinity)
                                 delta_w = [V*etha*(data_set_random[i][k]-weight) for k,weight in enumerate(weights[col][row])]
